@@ -29,7 +29,7 @@ public class AuthenticationUseCase implements AuthenticationServicePort {
                 .flatMap(user ->
                         passwordEncoderPort.matches(loginRequest.password(), user.password())
                                 .flatMap(matches -> {
-                                    if (!matches) {
+                                    if (Boolean.FALSE.equals(matches)) {
                                         return Mono.error(new BusinessException(TechnicalMessage.INVALID_CREDENTIALS));
                                     }
                                     String token = jwtServicePort.generateToken(user.email(), user.role());

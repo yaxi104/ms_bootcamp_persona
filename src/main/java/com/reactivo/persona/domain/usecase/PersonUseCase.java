@@ -35,28 +35,27 @@ public class PersonUseCase implements PersonServicePort {
                         ValidationHelper.validateRequest(registerPerson, p -> p.password() != null && p.password().length() >= 8),
                         ValidationHelper.validateRequest(registerPerson, p -> p.role() != null)
                 )
-                .then(personPersistencePort.existByEmail(registerPerson.email())
-                        .flatMap(exists -> exists
-                                ? Mono.error(new BusinessException(
-                                TechnicalMessage.USER_ALREADY_EXISTS))
-                                : Mono.empty()
-                        )
-                )
-                .then(passwordEncoderPort.encode(registerPerson.password()))
-                .flatMap(encodedPassword -> {
-                    UserAccount userAccount = UserAccount.from(registerPerson, encodedPassword);
-                    return userAccountPersistencePort.save(userAccount);
-                })
-                .flatMap(userAccount ->
-                        personPersistencePort.save(
-                                new Person(null,
-                                        userAccount.id(),
-                                        registerPerson.name(),
-                                        registerPerson.email(),
-                                        registerPerson.age()
-                                )
-                        )
-                );
+                .then(personPersistencePort.existByEmail(registerPerson.email()))
+                .flatMap(exists -> {
+                    if (Boolean.TRUE.equals(exists)) {
+                        return Mono.error(new BusinessException(TechnicalMessage.USER_ALREADY_EXISTS));
+                    }
+                    return passwordEncoderPort.encode(registerPerson.password())
+                            .flatMap(encodedPassword -> {
+                                UserAccount userAccount = UserAccount.from(registerPerson, encodedPassword);
+                                return userAccountPersistencePort.save(userAccount)
+                                        .flatMap(savedAccount ->
+                                                personPersistencePort.save(
+                                                        new Person(null,
+                                                                savedAccount.id(),
+                                                                registerPerson.name(),
+                                                                registerPerson.email(),
+                                                                registerPerson.age()
+                                                        )
+                                                )
+                                        );
+                            });
+                });
     }
 
 }
