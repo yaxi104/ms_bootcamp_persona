@@ -15,8 +15,8 @@ public enum TechnicalMessage {
     INVALID_MESSAGE_ID("404", "Invalid Message ID, please verify", "messageId"),
     UNSUPPORTED_OPERATION("501", "Method not supported, please try again", ""),
     USER_CREATED("201", "User created successfully", ""),
-    ADAPTER_RESPONSE_NOT_FOUND("404-0", "invalid email, please verify", ""),
-    USER_ALREADY_EXISTS("400","El usuario ya está registrado." ,"" ),
+    USER_ALREADY_EXISTS("400", "El usuario ya tiene inscrito ", ""),
+    BOOTCAMP_LIMIT_EXCEEDED("400","No se puede inscribir a más de 5 bootcamps simultáneamente" ,"" ),
     INVALID_CREDENTIALS("401","Credenciales invalidas", "");
 
     private final String code;

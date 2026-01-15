@@ -1,0 +1,54 @@
+package com.reactivo.persona.infrastructure.entrypoints.util;
+
+import com.reactivo.persona.domain.enums.TechnicalMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.util.List;
+
+import static com.reactivo.persona.infrastructure.entrypoints.util.Constants.X_MESSAGE_ID;
+
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class HandlerUtils {
+
+    public Mono<ServerResponse> buildErrorResponse(HttpStatus httpStatus,
+                                                   String identifier,
+                                                   TechnicalMessage error,
+                                                   List<ErrorDTO> errors) {
+        return Mono.defer(() -> {
+            APIResponse apiErrorResponse = APIResponse.builder()
+                    .code(error.getCode())
+                    .message(error.getMessage())
+                    .identifier(identifier)
+                    .date(Instant.now().toString())
+                    .errors(errors)
+                    .build();
+            return ServerResponse.status(httpStatus)
+                    .bodyValue(apiErrorResponse);
+        });
+    }
+
+    public String getMessageId(ServerRequest serverRequest) {
+        String messageId = serverRequest.headers()
+                .firstHeader(X_MESSAGE_ID);
+
+        if (messageId == null || messageId.isBlank()) {
+            return null;
+        }
+
+        return messageId.trim();
+    }
+
+    public boolean isMessageIdPresent(ServerRequest serverRequest) {
+        return getMessageId(serverRequest) != null;
+    }
+}

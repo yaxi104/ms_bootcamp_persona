@@ -33,53 +33,54 @@ management:
       enabled: false
     refresh:
       enabled: false
-#email-validator:
-#  base-url: "${EMAIL_VALIDATOR_BASE_URL:https://emailvalidation.abstractapi.com/v1/}"
-#  api-key: "${EMAIL_VALIDATOR_API_KEY:3b1d9eb55cfe489dae5ab293b4234e0d}"
-#  timeout: "${EMAIL_VALIDATOR_TIMEOUT:500}"
-resilience4j.circuitbreaker:
-  circuit-breaker-aspect-order: 1
-  configs:
-    default:
-      register-health-indicator: true
-  instances:
-    emailValidator:
-      base-config: default
-      failure-rate-threshold: 50
-      slow-call-rate-threshold: 50
-      slow-call-duration-threshold: 2s
-      sliding-window-size: 5
-      minimum-number-of-calls: 5
-      wait-duration-in-open-state: 25s
-      max-wait-duration-in-half-open-state: 5s
-      permitted-number-of-calls-in-half-open-state: 2
-      automatic-transition-from-open-to-half-open-enabled: false
-      record-exceptions: java.util.concurrent.TimeoutException
-      ignore-exceptions: com.reactivo.persona.domain.exceptions.BusinessException
+
+clients:
+  bootcamp:
+    base-url: "${BOOTCAMP_BASE_URL:http://localhost:8083}"
+    timeout-ms: 3000
+
 resilience4j:
+  circuitbreaker:
+    circuit-breaker-aspect-order: 1
+    configs:
+      default:
+        register-health-indicator: true
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        sliding-window-size: 5
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 25s
+        max-wait-duration-in-half-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: false
+        record-exceptions:
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - com.reactivo.persona.domain.exceptions.BusinessException
+
+    instances:
+      bootcamp:
+        base-config: default
+
   retry:
     configs:
       default:
         maxAttempts: 3
-        waitDuration: 2000ms
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2.0
-        maxWaitDuration: 10000ms  # Duración máxima del backoff
-        initialInterval: 500ms    # Intervalo inicial para el backoff
-    instances:
-      emailValidatorRetry:
-        maxAttempts: 5
         waitDuration: 1000ms
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 1.5
-        maxWaitDuration: 10000ms  # Duración máxima del backoff
-        initialInterval: 500ms    # Intervalo inicial para el backoff
+        maxWaitDuration: 10000ms
+        initialInterval: 500ms
+    instances:
+      bootcampRetry:
+        base-config: default
+
   bulkhead:
     configs:
       default:
-        maxConcurrentCalls: 10
-        maxWaitDuration: 500ms
-    instances:
-      emailValidatorBulkhead:
         maxConcurrentCalls: 5
         maxWaitDuration: 1s
+    instances:
+      bootcampBulkhead:
+        base-config: default
